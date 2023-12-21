@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# A bash-based CLI tool that allows users to quickly upload files to Azure cloud storage solution, providing a simple and semaless upload experience similar to popular storage services
+
+setup() {
+    # Install az cli
+    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    # Login
+    az login --use-device-code
+    echo "You're logged in."
+}
+
+filecheck(){
+
+
+    current_date_time=$(date)
+     
+     read -p "Enter your path: " path 
+
+     read -p "Enter your filename: " filename
+
+    pushd $path 
+
+     echo ""
+
+     echo ""
+
+     echo "Current date and time: $current_date_time"
+
+     echo "path: $path"
+
+     echo "filename: $filename"
+
+    if [[ -f "$filename" ]]; then 
+            echo "file $filename is exist"
+        else 
+            echo "file $filename is not exist"
+            exit
+    fi
+}
+
+fileupload(){ 
+
+    read -p "Enter your storage account: " storage_account 
+
+    read -p "Enter your container: " container
+
+    az storage blob upload \
+    --account-name $storage_account \
+    --container-name $container \
+    --name $filename \
+    --file $path/$filename  \
+    --auth-mode login \
+    --overwrite
+
+     echo "file $filename upload to storage account $storage_account container $container"
+
+}
+
+uploadOuputAndError()
+{
+    popd 
+
+     az storage blob upload \
+    --account-name $storage_account \
+    --container-name $container \
+    --name output.txt \
+    --file $(pwd)/output.txt  \
+    --auth-mode login \
+    --overwrite
+
+     echo "file output.txt upload to storage account $storage_account container $container"
+
+}
+
+print_storage_list(){
+
+
+     az storage blob list \
+    --account-name $storage_account \
+    --container-name $container \
+    --output table \
+    --auth-mode login 
+
+}
+
+
+
+#setup
+filecheck
+fileupload
+uploadOuputAndError
+print_storage_list
